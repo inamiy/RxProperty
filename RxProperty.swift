@@ -75,8 +75,16 @@ public final class Property<Element> {
             .addDisposableTo(disposeBag)
     }
 
+    /// Observable that synchronously sends current element and then changed elements.
+    /// This is same as `ReactiveSwift.Property<T>.producer`.
     public func asObservable() -> Observable<E> {
         return _variable.asObservable()
+    }
+
+    /// Observable that only sends changed elements, ignoring current element.
+    /// This is same as `ReactiveSwift.Property<T>.signal`.
+    public var changed: Observable<E> {
+        return asObservable().skip(1)
     }
 
 }
