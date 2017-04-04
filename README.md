@@ -10,7 +10,7 @@ In short:
 public final class 💩ViewModel<T> {
     // 💩 This is almost the same as `var state: T`.
     // DON'T EXPOSE "VAR"IABLE!
-    public let state = Variable<T>
+    public let state = Variable<T>(...)
 
     // 💩 Exposing `Observable` is NOT a good solution either
     // because type doesn't tell us that it contains at least one value
@@ -24,11 +24,13 @@ public final class 💩ViewModel<T> {
 ```swift
 public final class 👍ViewModel<T> {
     // 👍 Hide "var"iable.
-    private let _state = Variable<T>
+    private let _state = Variable<T>(...)
 
     // 👍 `Property` is a better type than `Observable`.
-    public var state: Property<T> {
-        return Property(_state)
+    public let state: Property<T>
+    
+    public init() {
+        self.state = Property(_state)
     }
 }
 ```
