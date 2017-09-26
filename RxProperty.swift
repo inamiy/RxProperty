@@ -7,6 +7,7 @@
 //
 
 import RxSwift
+import RxCocoa
 
 /// A get-only `Variable` that is equivalent to ReactiveSwift's `Property`.
 ///
@@ -62,7 +63,7 @@ public final class Property<Element> {
 
         observable
             .subscribe(onNext: { initial = $0 })
-            .addDisposableTo(disposeBag)
+            .disposed(by: disposeBag)
 
         guard let initial_ = initial else {
             fatalError("An unsafeObservable promised to send at least one value. Received none.")
@@ -71,8 +72,8 @@ public final class Property<Element> {
         _variable = Variable(initial_)
 
         observable
-            .bindTo(_variable)
-            .addDisposableTo(disposeBag)
+            .bind(to: _variable)
+            .disposed(by: disposeBag)
     }
 
     /// Observable that synchronously sends current element and then changed elements.
