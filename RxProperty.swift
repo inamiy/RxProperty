@@ -76,6 +76,18 @@ public final class Property<Element> {
             .disposed(by: disposeBag)
     }
 
+    /// Initializes with `initial` element and then `observable`.
+    public init(initial: E, then observable: Observable<E>) {
+        let disposeBag = DisposeBag()
+        _disposeBag = disposeBag
+
+        _variable = Variable(initial)
+
+        observable
+            .bind(to: _variable)
+            .disposed(by: disposeBag)
+    }
+
     /// Observable that synchronously sends current element and then changed elements.
     /// This is same as `ReactiveSwift.Property<T>.producer`.
     public func asObservable() -> Observable<E> {
