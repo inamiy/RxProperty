@@ -11,9 +11,13 @@ import RxCocoa
 
 /// A get-only `Variable` that is equivalent to ReactiveSwift's `Property`.
 ///
-/// - SeeAlso: https://github.com/ReactiveCocoa/ReactiveSwift/blob/1.1.0/Sources/Property.swift
-/// - SeeAlso: https://github.com/ReactiveX/RxSwift/pull/1118 (unmerged)
-/// - Note: To avoid this instance being captured accidentally, this class doesn't conform to `ObservableConvertibleType`.
+/// - Note:
+/// This will send `.completed` when deallocated, just like `Variable` but not like `BehaviorRelay`.
+/// Thus, this class doesn't conform to `ObservableConvertibleType` for avoiding this being captured accidentally.
+///
+/// - SeeAlso:
+///     https://github.com/ReactiveCocoa/ReactiveSwift/blob/1.1.0/Sources/Property.swift
+///     https://github.com/ReactiveX/RxSwift/pull/1118 (unmerged)
 public final class Property<Element> {
 
     public typealias E = Element
@@ -45,6 +49,11 @@ public final class Property<Element> {
         self.init(unsafeObservable: variable.asObservable())
     }
 
+    /// Initializes with `BehaviorRelay` but not capturing it.
+    public convenience init(_ behaviorRelay: BehaviorRelay<E>) {
+        self.init(unsafeObservable: behaviorRelay.asObservable())
+    }
+
     /// Initializes with `Observable` that must send at least one value synchronously.
     ///
     /// - Warning:
@@ -58,7 +67,7 @@ public final class Property<Element> {
         let disposeBag = DisposeBag()
         _disposeBag = disposeBag
 
-        let observable = unsafeObservable.shareReplayLatestWhileConnected()
+        let observable = unsafeObservable.share(replay: 1, scope: .whileConnected)
         var initial: E? = nil
 
         observable
