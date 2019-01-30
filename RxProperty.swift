@@ -9,11 +9,10 @@
 import RxSwift
 import RxCocoa
 
-/// A get-only `Variable` that is equivalent to ReactiveSwift's `Property`.
+/// A get-only `BehaviorRelay` that works similar to ReactiveSwift's `Property`.
 ///
 /// - Note:
-/// This will send `.completed` when deallocated, just like `Variable` but not like `BehaviorRelay`.
-/// Thus, this class doesn't conform to `ObservableConvertibleType` for avoiding this being captured accidentally.
+/// From ver 0.3.0, this class will no longer send `.completed` when deallocated.
 ///
 /// - SeeAlso:
 ///     https://github.com/ReactiveCocoa/ReactiveSwift/blob/1.1.0/Sources/Property.swift
@@ -22,36 +21,38 @@ public final class Property<Element> {
 
     public typealias E = Element
 
-    private let _variable: Variable<E>
+    private let _behaviorRelay: BehaviorRelay<E>
     private let _disposeBag: DisposeBag?
 
     /// Gets current value.
     public var value: E {
         get {
-            return _variable.value
+            return _behaviorRelay.value
         }
     }
 
     /// Initializes with initial value.
     public init(_ value: E) {
-        _variable = Variable(value)
+        _behaviorRelay = BehaviorRelay(value: value)
         _disposeBag = nil
     }
 
-    /// Initializes with `Variable` and captures it.
-    public init(capturing variable: Variable<E>) {
-        _variable = variable
+    /// Initializes with `BehaviorRelay`.
+    public init(_ behaviorRelay: BehaviorRelay<E>) {
+        _behaviorRelay = behaviorRelay
         _disposeBag = nil
     }
 
-    /// Initializes with `Variable` but not capturing it.
+    /// Initializes with `Variable` (DEPRECATED).
+    @available(*, deprecated, message: "Use `init(_ behaviorRelay:)` instead. Note that `Variable` will not be captured.")
+    public convenience init(capturing variable: Variable<E>) {
+        self.init(variable)
+    }
+
+    /// Initializes with `Variable` (DEPRECATED).
+    @available(*, deprecated, message: "Use `init(_ behaviorRelay:)` instead.")
     public convenience init(_ variable: Variable<E>) {
-        self.init(unsafeObservable: variable.asObservable())
-    }
-
-    /// Initializes with `BehaviorRelay` but not capturing it.
-    public convenience init(_ behaviorRelay: BehaviorRelay<E>) {
-        self.init(unsafeObservable: behaviorRelay.asObservable())
+        self.init(initial: variable.value, then: variable.asObservable())
     }
 
     /// Initializes with `Observable` that must send at least one value synchronously.
@@ -63,26 +64,20 @@ public final class Property<Element> {
     /// - Warning:
     /// If `unsafeObservable` sends multiple values synchronously,
     /// the last value will be treated as initial value of `Property`.
-    public init(unsafeObservable: Observable<E>) {
-        let disposeBag = DisposeBag()
-        _disposeBag = disposeBag
-
+    public convenience init(unsafeObservable: Observable<E>) {
         let observable = unsafeObservable.share(replay: 1, scope: .whileConnected)
         var initial: E? = nil
 
-        observable
+        let initialDisposable = observable
             .subscribe(onNext: { initial = $0 })
-            .disposed(by: disposeBag)
 
         guard let initial_ = initial else {
             fatalError("An unsafeObservable promised to send at least one value. Received none.")
         }
 
-        _variable = Variable(initial_)
+        self.init(initial: initial_, then: observable)
 
-        observable
-            .bind(to: _variable)
-            .disposed(by: disposeBag)
+        initialDisposable.dispose()
     }
 
     /// Initializes with `initial` element and then `observable`.
@@ -90,17 +85,17 @@ public final class Property<Element> {
         let disposeBag = DisposeBag()
         _disposeBag = disposeBag
 
-        _variable = Variable(initial)
+        _behaviorRelay = BehaviorRelay(value: initial)
 
         observable
-            .bind(to: _variable)
+            .bind(to: _behaviorRelay)
             .disposed(by: disposeBag)
     }
 
     /// Observable that synchronously sends current element and then changed elements.
     /// This is same as `ReactiveSwift.Property<T>.producer`.
     public func asObservable() -> Observable<E> {
-        return _variable.asObservable()
+        return _behaviorRelay.asObservable()
     }
 
     /// Observable that only sends changed elements, ignoring current element.
