@@ -127,7 +127,7 @@ final class RxPropertyTests: XCTestCase {
                        "`.completed` should NOT be observed when `property` is deallocated")
 
         relay.accept(3)
-        XCTAssertEqual(events, [Event<Int>.next(0), .next(1), .next(2), .next(3)],
+        XCTAssertEqual(events, [.next(0), .next(1), .next(2), .next(3)],
                        "`property`'s observable should still be alive even when `property` is deallocated.")
 
     }
@@ -157,7 +157,7 @@ final class RxPropertyTests: XCTestCase {
         XCTAssertEqual(events, [.next(1), .next(2)])
 
         relay.accept(3)
-        XCTAssertEqual(events, [Event<Int>.next(1), .next(2), .next(3)],
+        XCTAssertEqual(events, [.next(1), .next(2), .next(3)],
                        "`property`'s observable should still be alive even when `property` is deallocated.")
 
     }
