@@ -22,6 +22,7 @@ public final class Property<Element> {
     public typealias E = Element
 
     private let _behaviorRelay: BehaviorRelay<E>
+    private let _disposeBag = DisposeBag()
 
     /// Gets current value.
     public var value: E {
@@ -78,12 +79,23 @@ public final class Property<Element> {
     }
 
     /// Initializes with `initial` element and then `observable`.
-    public init(initial: E, then observable: Observable<E>) {
+    /// If completesOnDeinit is true, then `observable` is completed when `property` is deallocated.
+    public init(initial: E, then observable: Observable<E>, completesOnDeinit: Bool = false) {
+
         _behaviorRelay = BehaviorRelay(value: initial)
 
-        _ = observable
-            .bind(to: _behaviorRelay)
-            // .disposed(by: disposeBag)    // Comment-Out: Don't dispose when `property` is deallocated
+        if completesOnDeinit {
+
+            observable
+                .bind(to: _behaviorRelay)
+                .disposed(by: _disposeBag)
+
+        } else {
+
+            _ = observable
+                .bind(to: _behaviorRelay)
+
+        }
     }
 
     /// Observable that synchronously sends current element and then changed elements.

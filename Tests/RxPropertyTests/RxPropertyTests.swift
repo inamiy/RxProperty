@@ -159,9 +159,46 @@ final class RxPropertyTests: XCTestCase {
         relay.accept(3)
         XCTAssertEqual(events, [.next(1), .next(2), .next(3)],
                        "`property`'s observable should still be alive even when `property` is deallocated.")
+    }
+
+    func test_completesOnDeinit_true() {
+
+        var disposed = false
+
+        // never completes
+        let never = Observable<Int>.never()
+            .do(onDispose: {
+                disposed = true
+            })
+
+        do {
+            let property: Property<Int> = .init(initial: 0, then: never, completesOnDeinit: true)
+
+            property.asObservable().subscribe().disposed(by: DisposeBag())
+        } // property is gone
+
+        XCTAssertTrue(disposed)
 
     }
 
+    func test_completesOnDeinit_false() {
+
+        var disposed = false
+
+        // never completes
+        let never = Observable<Int>.never()
+            .do(onDispose: {
+                disposed = true
+            })
+
+        do {
+            let property: Property<Int> = .init(initial: 0, then: never, completesOnDeinit: false)
+
+            property.asObservable().subscribe().disposed(by: DisposeBag())
+        } // property is gone
+
+        XCTAssertFalse(disposed)
+    }
 }
 
 // MARK: RxSwift.Event + Equatable
