@@ -1,6 +1,6 @@
 import XCTest
 import RxSwift
-import RxCocoa
+import RxRelay
 @testable import RxProperty
 
 final class RxPropertyTests: XCTestCase {
