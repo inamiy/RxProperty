@@ -1,24 +1,21 @@
-// swift-tools-version:4.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version:5.2
+// Managed by ice
 
 import PackageDescription
 
 let package = Package(
     name: "RxProperty",
     products: [
-        .library(
-            name: "RxProperty",
-            targets: ["RxProperty"]),
+        .library(name: "RxProperty", targets: ["RxProperty"]),
     ],
     dependencies: [
-         .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "4.0.0"),
+        .package(url: "https://github.com/ReactiveX/RxSwift", from: "5.1.1"),
     ],
     targets: [
-        .target(
-            name: "RxProperty",
-            dependencies: ["RxSwift", "RxCocoa"]),
-        .testTarget(
-            name: "RxPropertyTests",
-            dependencies: ["RxProperty"]),
+        .target(name: "RxProperty", dependencies: [
+            "RxSwift",
+            .product(name: "RxRelay", package: "RxSwift"),
+        ]),
+        .testTarget(name: "RxPropertyTests", dependencies: ["RxProperty"]),
     ]
 )

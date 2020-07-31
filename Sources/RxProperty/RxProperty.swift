@@ -7,7 +7,7 @@
 //
 
 import RxSwift
-import RxCocoa
+import RxRelay
 
 /// A get-only `BehaviorRelay` that works similar to ReactiveSwift's `Property`.
 ///
