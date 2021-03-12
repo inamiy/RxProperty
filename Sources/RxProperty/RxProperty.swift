@@ -40,18 +40,6 @@ public final class Property<Element> {
         _behaviorRelay = behaviorRelay
     }
 
-    /// Initializes with `Variable` (DEPRECATED).
-    @available(*, deprecated, message: "Use `init(_ behaviorRelay:)` instead. Note that `Variable` will not be captured.")
-    public convenience init(capturing variable: Variable<E>) {
-        self.init(variable)
-    }
-
-    /// Initializes with `Variable` (DEPRECATED).
-    @available(*, deprecated, message: "Use `init(_ behaviorRelay:)` instead.")
-    public convenience init(_ variable: Variable<E>) {
-        self.init(initial: variable.value, then: variable.asObservable())
-    }
-
     /// Initializes with `Observable` that must send at least one value synchronously.
     ///
     /// - Warning:
